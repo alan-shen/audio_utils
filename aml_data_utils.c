@@ -13,14 +13,15 @@
  **        replace
  ** author: shen pengru
  */
-#define LOG_TAG "audio_data_utils"
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <errno.h>
 #include <cutils/log.h>
 #include <fcntl.h>
+#include "aml_data_utils.h"
+
+#define LOG_TAG "audio_data_utils"
 
 #define MINUS_3_DB_IN_Q19_12 2896 // -3dB = 0.707 * 2^12 = 2896
 /* PCM5.1 */

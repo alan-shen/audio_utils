@@ -14,6 +14,9 @@
 #include <cutils/log.h>
 #include <cutils/str_parms.h>
 #include <cutils/properties.h>
+#include "aml_android_utils.h"
+
+#define LOG_TAG "audio_android_utils"
 
 /*
  * Android Property

@@ -5,77 +5,78 @@
  ** author: shen pengru
  **
  */
-#define LOG_TAG "audio_data_utils"                                              
-                                                                                
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <errno.h>
 #include <cutils/log.h>
 #include <fcntl.h>
+#include "aml_alsa_mixer.h"
 
-static struct aml_mixer_list gAmlMixerList {                                       
-    {AML_MIXER_ID_I2S_MUTE,           "Audio i2s mute"},                           
-    {AML_MIXER_ID_SPDIF_MUTE,         "Audio spdif mute"},                         
-    {AML_MIXER_ID_SPDIF_ENABLE,       "Audio spdif enable"},                       
-    {AML_MIXER_ID_AUDIO_IN_SRC,       "Audio In Source"},                          
-    {AML_MIXER_ID_I2SIN_AUDIO_TYPE,   "I2SIN Audio Type"},                         
-    {AML_MIXER_ID_SPDIFIN_AUDIO_TYPE, "SPDIFIN Audio Type"},                       
-    {AML_MIXER_ID_HW_RESAMPLE_ENABLE, "Hardware resample enable"},                 
-    {AML_MIXER_ID_OUTPUT_SWAP,        "Output Swap"},                              
+#define LOG_TAG "audio_alsa_mixer"
+
+static struct aml_mixer_list gAmlMixerList {
+    {AML_MIXER_ID_I2S_MUTE,           "Audio i2s mute"},
+    {AML_MIXER_ID_SPDIF_MUTE,         "Audio spdif mute"},
+    {AML_MIXER_ID_SPDIF_ENABLE,       "Audio spdif enable"},
+    {AML_MIXER_ID_AUDIO_IN_SRC,       "Audio In Source"},
+    {AML_MIXER_ID_I2SIN_AUDIO_TYPE,   "I2SIN Audio Type"},
+    {AML_MIXER_ID_SPDIFIN_AUDIO_TYPE, "SPDIFIN Audio Type"},
+    {AML_MIXER_ID_HW_RESAMPLE_ENABLE, "Hardware resample enable"},
+    {AML_MIXER_ID_OUTPUT_SWAP,        "Output Swap"},
 };
 
 static struct aml_mixer_ctrl gCtlI2sMute {
-	{I2S_MUTE_ON,  ""},
-	{I2S_MUTE_OFF, ""},
+	{I2S_MUTE_ON,  "On"},
+	{I2S_MUTE_OFF, "Off"},
 };
 
 static struct aml_mixer_ctrl gCtlSpdifMute {
-	{SPDIF_MUTE_ON, ""},
-	{SPDIF_MUTE_OFF, ""},
+	{SPDIF_MUTE_ON,  "On"},
+	{SPDIF_MUTE_OFF, "Off"},
 };
 
 static struct aml_mixer_ctrl gCtlSpdifEn {
-	{SPDIF_EN_ENABLE, ""},
-	{SPDIF_EN_DISABLE, ""},
+	{SPDIF_EN_ENABLE,  "On"},
+	{SPDIF_EN_DISABLE, "Off"},
 };
 
 static struct aml_mixer_ctrl gCtlAudioInSrc {
-	{AUDIOIN_SRC_LINEIN, ""},
-	{AUDIOIN_SRC_ATV, ""},
-	{AUDIOIN_SRC_HDMI, ""},
-	{AUDIOIN_SRC_SPDIFIN, ""},
+	{AUDIOIN_SRC_LINEIN,  "LINEIN"},
+	{AUDIOIN_SRC_ATV,     "ATV"},
+	{AUDIOIN_SRC_HDMI,    "HDMI"},
+	{AUDIOIN_SRC_SPDIFIN, "SPDIFIN"},
 };
 
 static struct aml_mixer_ctrl gCtlI2SInType {
-	{I2SIN_AUDIO_TYPE_LPCM, ""},
-	{I2SIN_AUDIO_TYPE_NONE_LPCM, ""},
-	{I2SIN_AUDIO_TYPE_UN_KNOWN, ""},
+	{I2SIN_AUDIO_TYPE_LPCM,      "LPCM"},
+	{I2SIN_AUDIO_TYPE_NONE_LPCM, "NONE-LPCM"},
+	{I2SIN_AUDIO_TYPE_UN_KNOWN,  "UN-KNOW"},
 };
 
 static struct aml_mixer_ctrl gCtlSpdifInType {
-	{SPDIFIN_AUDIO_TYPE_LPCM, ""},
-	{SPDIFIN_AUDIO_TYPE_AC3, ""},
-	{SPDIFIN_AUDIO_TYPE_EAC3, ""},
-	{SPDIFIN_AUDIO_TYPE_DTS, ""},
-	{SPDIFIN_AUDIO_TYPE_DTSHD, ""},
-	{SPDIFIN_AUDIO_TYPE_TRUEHD, ""},
+	{SPDIFIN_AUDIO_TYPE_LPCM,   "LPCM"},
+	{SPDIFIN_AUDIO_TYPE_AC3,    "AC3"},
+	{SPDIFIN_AUDIO_TYPE_EAC3,   "EAC3"},
+	{SPDIFIN_AUDIO_TYPE_DTS,    "DTS"},
+	{SPDIFIN_AUDIO_TYPE_DTSHD,  "DTS-HD"},
+	{SPDIFIN_AUDIO_TYPE_TRUEHD, "TRUEHD"},
 };
 
 static struct aml_mixer_ctrl gCtlHwResample {
-	{HW_RESAMPLE_DISABLE, ""},
-	{HW_RESAMPLE_48K, ""},
-	{HW_RESAMPLE_44K, ""},
-	{HW_RESAMPLE_32K, ""},
-	{HW_RESAMPLE_LOCK, ""},
-	{HW_RESAMPLE_UNLOCK, ""},
+	{HW_RESAMPLE_DISABLE, "Disable"},
+	{HW_RESAMPLE_48K,     "Enable:48K"},
+	{HW_RESAMPLE_44K,     "Enable:44K"},
+	{HW_RESAMPLE_32K,     "Enable:32K"},
+	{HW_RESAMPLE_LOCK,    "Lock Resample"},
+	{HW_RESAMPLE_UNLOCK,  "Unlock Resample"},
 };
 
 static struct aml_mixer_ctrl gCtlOutputSwap {
-	{OUTPUT_SWAP_LR, ""},
-	{OUTPUT_SWAP_LL, ""},
-	{OUTPUT_SWAP_RR, ""},
-	{OUTPUT_SWAP_RL, ""},
+	{OUTPUT_SWAP_LR, "LR"},
+	{OUTPUT_SWAP_LL, "LL"},
+	{OUTPUT_SWAP_RR, "RR"},
+	{OUTPUT_SWAP_RL, "RL"},
 };
 
 static char *_get_mixer_name_by_id(int mixer_id)
@@ -130,7 +131,7 @@ static int _get_aml_sound_card(void) {
 	return card;
 }
 
-static struct mixer *_get_mixer_handle(int mixer_id)
+static struct mixer *_open_mixer_handle(int mixer_id)
 {
 	int card = 0;
 	struct mixer *pmixer = NULL;
@@ -177,7 +178,7 @@ int aml_mixer_ctrl_get_int(int mixer_id)
 	struct mixer_ctl *pCtrl;
 	int value = -1;
 
-	pMixer = _get_mixer_handle();
+	pMixer = _open_mixer_handle();
 	if (pMixer == NULL) {
 		ALOGE("[%s:%d] Failed to open mixer\n", __FUNCTION__, __LINE__);
 		return -1;
@@ -204,7 +205,7 @@ int aml_mixer_ctrl_get_str(int mixer_id, char *value)
 	struct mixer_ctl *pCtrl;
 	char value[50];
 
-	pMixer = _get_mixer_handle();
+	pMixer = _open_mixer_handle();
 	if (pMixer == NULL) {
 		ALOGE("[%s:%d] Failed to open mixer\n", __FUNCTION__, __LINE__);
 		return -1;
@@ -231,7 +232,7 @@ int aml_mixer_ctrl_set_int(int mixer_id, int value)
 	struct mixer_ctl *pCtrl;
 	int value = -1;
 
-	pMixer = _get_mixer_handle();
+	pMixer = _open_mixer_handle();
 	if (pMixer == NULL) {
 		ALOGE("[%s:%d] Failed to open mixer\n", __FUNCTION__, __LINE__);
 		return -1;
@@ -257,7 +258,7 @@ int aml_mixer_ctrl_set_str(int mixer_id, char *value)
 	struct mixer_ctl *pCtrl;
 	int value = -1;
 
-	pMixer = _get_mixer_handle();
+	pMixer = _open_mixer_handle();
 	if (pMixer == NULL) {
 		ALOGE("[%s:%d] Failed to open mixer\n", __FUNCTION__, __LINE__);
 		return -1;
