@@ -17,15 +17,19 @@ extern "C" {
  *      -----------------------------------------------------
  *                                      || IDX     || BitMask
  *      -----------------------------------------------------
- *      case 1: [2.1][normal][pulpfiction]
+ *      case 1: [2.0][normal][pulpfiction]
  *                                         L/R     -> I2S_01
- *      case 2: [2.1][matrix]
+ *      case 2: [2.0][matrix]
  *                                         L/R     -> I2S_23
  *      case 3: [4.1][missionimpossible]
  *                                         L/R     -> I2S_01
  *                                         LFE/LFE -> I2S_23
  *                                         Ls/Rs   -> I2S_45
- *      case 4: [5.1.2][atmos]
+ *      case 4: [5.1]
+ *                                         L/R     -> I2S_01
+ *                                         C/LFE   -> I2S_23
+ *                                         Ls/Rs   -> I2S_45
+ *      case 5: [5.1.2][atmos]
  *                                         L/R     -> I2S_01
  *                                         C/LFE   -> I2S_23
  *                                         Lt/Rt   -> I2S_45
@@ -33,26 +37,28 @@ extern "C" {
  *      -----------------------------------------------------
  *  
  *****************************************************************************/
-typedef enum CHANNEL_NAME_INDEX{
-	AML_CHANNEL_L         = 0,
-	AML_CHANNEL_R         = 1,
-	AML_CHANNEL_C         = 2,
-	AML_CHANNEL_LFE       = 3,
-	AML_CHANNEL_LS        = 4,
-	AML_CHANNEL_RS        = 5,
-	AML_CHANNEL_LBS       = 6,
-	AML_CHANNEL_RBS       = 7,
-	AML_CHANNEL_LT        = 8,
-	AML_CHANNEL_RT        = 9,
-	AML_CHANNEL_5_1_ALL   = 0x003F,
-	AML_CHANNEL_7_1_ALL   = 0x00FF,
-	AML_CHANNEL_5_1_2_ALL = 0x033F,
-	AML_CHANNEL_MAX       = 0xFFFF,
-} eChannelNameIdx;
+typedef enum CHANNEL_CONTENT_INDEX {
+	AML_CH_IDX_L         = 0,
+	AML_CH_IDX_R         = 1,
+	AML_CH_IDX_C         = 2,
+	AML_CH_IDX_LFE       = 3,
+	AML_CH_IDX_LS        = 4,
+	AML_CH_IDX_RS        = 5,
+	AML_CH_IDX_LBS       = 6,
+	AML_CH_IDX_RBS       = 7,
+	AML_CH_IDX_LT        = 8,
+	AML_CH_IDX_RT        = 9,
+	AML_CH_IDX_MAX       = 10,
+	AML_CH_IDX_5_1_ALL   = 0x003F,
+	AML_CH_IDX_7_1_ALL   = 0x00FF,
+	AML_CH_IDX_5_1_2_ALL = 0x033F,
+} eChannelContentIdx;
 
 /******************************************************************************
  *  AML I2S Channel Bit Map:
- *
+ *  ----------------------
+ *  I2S Port ||    I2S Ch
+ *  ----------------------
  *    I2S_01 -- CHANNEL_0
  *           `- CHANNEL_1
  *    I2S_23 -- CHANNEL_2
@@ -64,35 +70,38 @@ typedef enum CHANNEL_NAME_INDEX{
  *
  *****************************************************************************/
 typedef enum I2S_DATALINE_INDEX {
-	AML_I2SIDX_01   = 0,
-	AML_I2SIDX_23   = 1,
-	AML_I2SIDX_45   = 2,
-	AML_I2SIDX_67   = 3,
-	AML_I2SIDX_NULL = 0x8000,
-	AML_I2SIDX_MAX  = 0xFFFF,
+	AML_I2S_PORT_IDX_01   = 0,
+	AML_I2S_PORT_IDX_23   = 1,
+	AML_I2S_PORT_IDX_45   = 2,
+	AML_I2S_PORT_IDX_67   = 3,
+	AML_I2S_PORT_IDX_NULL = 0x8000,
+	AML_I2S_PORT_IDX_MAX  = 0xFFFF,
 } eI2SDataLineIdx;
 
-typedef enum CHANNEL_NUM_BIT_MASK{
-	AML_CHANNEL_0    = 0x1<<0,
-	AML_CHANNEL_1    = 0x1<<1,
-	AML_CHANNEL_2    = 0x1<<2,
-	AML_CHANNEL_3    = 0x1<<3,
-	AML_CHANNEL_4    = 0x1<<4,
-	AML_CHANNEL_5    = 0x1<<5,
-	AML_CHANNEL_6    = 0x1<<6,
-	AML_CHANNEL_7    = 0x1<<7,
-	AML_CHANNEL_NULL = 0x1<<31,
-} eChNumBitMask;
+typedef enum CHANNEL_ON_I2S_BIT_MASK{
+	AML_I2S_CHANNEL_0    = 0x1<<0,
+	AML_I2S_CHANNEL_1    = 0x1<<1,
+	AML_I2S_CHANNEL_2    = 0x1<<2,
+	AML_I2S_CHANNEL_3    = 0x1<<3,
+	AML_I2S_CHANNEL_4    = 0x1<<4,
+	AML_I2S_CHANNEL_5    = 0x1<<5,
+	AML_I2S_CHANNEL_6    = 0x1<<6,
+	AML_I2S_CHANNEL_7    = 0x1<<7,
+	AML_I2S_CHANNEL_NULL = 0x1<<31,
+} eChOnI2SBitMask;
+
+#define AML_I2S_CHANNEL_COUNT  (8)
 
 struct aml_channel_map {
-	eChannelNameIdx channel_idx;
+	eChannelContentIdx channel_idx;
 	// WARNNING: support map to only one i2s data line 
-	eI2SDataLineIdx i2s_idx;
+	eI2SDataLineIdx    i2s_idx;
 	// WARNNING: may be one channel will map to 2 i2s data channel
 	// eg, i2s_23 -> lfe/lfe
-	eChNumBitMask   bit_mask;
+	eChOnI2SBitMask    bit_mask;
 };
 
+#if 0
 struct aml_product_channel_maps {
 	struct aml_channel_map l;   // left
 	struct aml_channel_map r;   // right
@@ -105,6 +114,17 @@ struct aml_product_channel_maps {
 	struct aml_channel_map lt;  // left  top
 	struct aml_channel_map rt;  // right top
 };
+#endif
+
+/******************************************************************************
+ * Function: data_load_product_config()
+ * Description:
+ *      load channel maps for current product
+ * Input:  NULL
+ * Output: NULL
+ * Return: Hw I2S Ch Maps
+ *****************************************************************************/
+struct aml_channel_map *data_load_product_config(void);
 
 /******************************************************************************
  * Function: data_get_product_chmaps()
@@ -114,17 +134,19 @@ struct aml_product_channel_maps {
  * Output: NULL
  * Return: Hw I2S Ch Maps
  *****************************************************************************/
-struct aml_product_channel_maps *data_get_product_chmaps(void);
+struct aml_channel_map *data_get_product_chmaps(void);
 
 /******************************************************************************
  * Function: data_get_channel_bit_mask()
  * Description:
  *       get hw i2s bit mask for channel "channelName"
- * Input:  eChannelNameIdx
+ * Input:  eChannelContentIdx
  * Output:
- * Return: eChNumBitMask
+ * Return: eChOnI2SBitMask
  *****************************************************************************/
-int data_get_channel_bit_mask(eChannelNameIdx channelName);
+int data_get_channel_bit_mask(
+	struct aml_channel_map *map,
+	eChannelContentIdx channelName);
 
 /******************************************************************************
  * Function: data_remix_to_lr_channel()
@@ -183,7 +205,7 @@ int data_extend_to_8channels(
  *     in_channels              - channel count of input
  *     in_framesz               - frame szie of input data 
  *     frames                   - frame count
- *     channel_extract_bit_mask - eChNumBitMask, ch mask will be extract
+ *     channel_extract_bit_mask - eChOnI2SBitMask, ch mask will be extract
  * Output:
  *     out_buf                  - output buffer
  * Return: Zero if success
@@ -231,7 +253,7 @@ int data_exchange_i2s_channels(
  *     channels                - channel count
  *     frames                  - frame count
  *     framesz                 - frame size
- *     channel_invert_bit_mask - eChNumBitMask, bit mask of channels which will
+ *     channel_invert_bit_mask - eChOnI2SBitMask, bit mask of channels which will
  *                               be invert
  * Output:
  *     buf                     - output data
@@ -280,7 +302,7 @@ int data_concat_channels(
  *     frames                 - frame count
  *     framesz                - frame size
  *     channels               - channel count
- *     channel_empty_bit_mask - eChNumBitMask, bit mask of channels which will
+ *     channel_empty_bit_mask - eChOnI2SBitMask, bit mask of channels which will
  *                              be empty
  * Output:
  *     buf                    - output data
@@ -302,7 +324,7 @@ int data_empty_channels(
  *     channels                - channel count
  *     frames                  - frame count
  *     framesz                 - frame size
- *     channel_ditter_bit_mask - eChNumBitMask, bit mask of channels which will
+ *     channel_ditter_bit_mask - eChOnI2SBitMask, bit mask of channels which will
  *                               be add ditter
  * Output:
  *     buffer                  - output data
@@ -326,7 +348,7 @@ int data_add_ditter_to_channels(
  *     in_channles             - channel count of input data
  *     in_framesz              - frame size of input
  *     frames                  - frame count
- *     channel_insert_bit_mask - eChNumBitMask, bit mask of lfe channel
+ *     channel_insert_bit_mask - eChOnI2SBitMask, bit mask of lfe channel
  * Output:
  *     out_buf                 - output data
  * Return: Zero if success

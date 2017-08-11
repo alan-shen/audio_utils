@@ -66,7 +66,6 @@ int16_t ditter_8ch[COUNT_DITTER_8CH] = {
 	0x0001, 0xffff, 0x0001, 0x0001, 0x0000, 0x0001, 0xffff, 0xffff
 };
 
-
 /******************************************************************************
  * utils
  *****************************************************************************/
@@ -76,6 +75,61 @@ static inline int16_t _clamp16(int32_t sample)
         sample = 0x7FFF ^ (sample>>31);
     return sample;
 }
+
+struct aml_channel_map test_maps[AML_I2S_CHANNEL_COUNT] {
+	{AML_CH_IDX_L,   AML_I2S_PORT_IDX_01,   AML_I2S_CHANNEL_0},
+	{AML_CH_IDX_R,   AML_I2S_PORT_IDX_01,   AML_I2S_CHANNEL_1},
+	{AML_CH_IDX_C,   AML_I2S_PORT_IDX_23,   AML_I2S_CHANNEL_2},
+	{AML_CH_IDX_LFE, AML_I2S_PORT_IDX_23,   AML_I2S_CHANNEL_3},
+	{AML_CH_IDX_LS,  AML_I2S_PORT_IDX_67,   AML_I2S_CHANNEL_6},
+	{AML_CH_IDX_RS,  AML_I2S_PORT_IDX_67,   AML_I2S_CHANNEL_7},
+	{AML_CH_IDX_LT,  AML_I2S_PORT_IDX_45,   AML_I2S_CHANNEL_4},
+	{AML_CH_IDX_RT,  AML_I2S_PORT_IDX_45,   AML_I2S_CHANNEL_5},
+};
+
+struct aml_channel_map *data_load_product_config(void)
+{
+	struct aml_channel_map *maps = NULL;
+	int i = 0;
+
+	maps = malloc(sizeof(struct aml_channel_map));
+	if (!maps) {
+		return NULL;
+	}
+
+	
+
+	return maps;
+}
+
+struct aml_channel_map *data_get_product_chmaps(void)
+{
+	//TODO: load real product config from tvconfig.conf
+	return &test_maps;
+}
+
+int data_get_channel_bit_mask(
+	struct aml_channel_map *map, eChannelContentIdx channelName)
+{
+	if (map == NULL) {
+		return AML_I2S_CHANNEL_NULL;
+	}
+
+	
+
+	return map
+
+	return 0;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 
 /******************************************************************************
  * empty
