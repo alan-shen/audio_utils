@@ -1,3 +1,10 @@
+/**
+ ** aml_android_utils.h
+ **
+ ** This program is APIs for get/set android property, get/set sys fs point.
+ ** author: shen pengru
+ **
+ */
 #ifndef _AML_ANDROID_UTILS_H_
 #define _AML_ANDROID_UTILS_H_
 

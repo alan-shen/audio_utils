@@ -1,3 +1,10 @@
+/**
+ ** aml_alsa_mixer.h
+ **
+ ** This program is APIs for read/write mixers of alsa.
+ ** author: shen pengru
+ **
+ */
 #ifndef _AML_ALSA_MIXER_H_
 #define _AML_ALSA_MIXER_H_
 

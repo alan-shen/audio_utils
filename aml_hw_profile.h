@@ -1,3 +1,8 @@
+/**
+ ** aml_hw_profile.h
+ ** author: shen pengru
+ **
+ */
 #ifndef _AML_HW_PROFILE_H_
 #define _AML_HW_PROFILE_H_
 

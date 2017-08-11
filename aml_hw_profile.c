@@ -1,3 +1,10 @@
+/**
+ ** aml_hw_profile.c
+ **
+ ** This program is APIs for get aml sound card/port.
+ ** author: shen pengru
+ **
+ */
 #include <errno.h>
 #include <pthread.h>
 #include <stdint.h>
