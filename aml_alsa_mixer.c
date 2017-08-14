@@ -16,7 +16,7 @@
 
 #define LOG_TAG "audio_alsa_mixer"
 
-static struct aml_mixer_list gAmlMixerList {
+static struct aml_mixer_list gAmlMixerList[AML_MIXER_ID_MAX] {
 	{AML_MIXER_ID_I2S_MUTE,           "Audio i2s mute"},
 	{AML_MIXER_ID_SPDIF_MUTE,         "Audio spdif mute"},
 	{AML_MIXER_ID_SPDIF_ENABLE,       "Audio spdif enable"},
@@ -27,35 +27,35 @@ static struct aml_mixer_list gAmlMixerList {
 	{AML_MIXER_ID_OUTPUT_SWAP,        "Output Swap"},
 };
 
-static struct aml_mixer_ctrl gCtlI2sMute {
+static struct aml_mixer_ctrl gCtlI2sMute[I2S_MUTE_MAX] {
 	{I2S_MUTE_ON,  "On"},
 	{I2S_MUTE_OFF, "Off"},
 };
 
-static struct aml_mixer_ctrl gCtlSpdifMute {
+static struct aml_mixer_ctrl gCtlSpdifMute[SPDIF_MUTE_MAX] {
 	{SPDIF_MUTE_ON,  "On"},
 	{SPDIF_MUTE_OFF, "Off"},
 };
 
-static struct aml_mixer_ctrl gCtlSpdifEn {
+static struct aml_mixer_ctrl gCtlSpdifEn[SPDIF_EN_MAX] {
 	{SPDIF_EN_ENABLE,  "On"},
 	{SPDIF_EN_DISABLE, "Off"},
 };
 
-static struct aml_mixer_ctrl gCtlAudioInSrc {
+static struct aml_mixer_ctrl gCtlAudioInSrc[AUDIOIN_SRC_MAX] {
 	{AUDIOIN_SRC_LINEIN,  "LINEIN"},
 	{AUDIOIN_SRC_ATV,     "ATV"},
 	{AUDIOIN_SRC_HDMI,    "HDMI"},
 	{AUDIOIN_SRC_SPDIFIN, "SPDIFIN"},
 };
 
-static struct aml_mixer_ctrl gCtlI2SInType {
+static struct aml_mixer_ctrl gCtlI2SInType[I2SIN_AUDIO_TYPE_MAX] {
 	{I2SIN_AUDIO_TYPE_LPCM,      "LPCM"},
 	{I2SIN_AUDIO_TYPE_NONE_LPCM, "NONE-LPCM"},
 	{I2SIN_AUDIO_TYPE_UN_KNOWN,  "UN-KNOW"},
 };
 
-static struct aml_mixer_ctrl gCtlSpdifInType {
+static struct aml_mixer_ctrl gCtlSpdifInType[SPDIFIN_AUDIO_TYPE_MAX] {
 	{SPDIFIN_AUDIO_TYPE_LPCM,   "LPCM"},
 	{SPDIFIN_AUDIO_TYPE_AC3,    "AC3"},
 	{SPDIFIN_AUDIO_TYPE_EAC3,   "EAC3"},
@@ -64,7 +64,7 @@ static struct aml_mixer_ctrl gCtlSpdifInType {
 	{SPDIFIN_AUDIO_TYPE_TRUEHD, "TRUEHD"},
 };
 
-static struct aml_mixer_ctrl gCtlHwResample {
+static struct aml_mixer_ctrl gCtlHwResample[HW_RESAMPLE_MAX] {
 	{HW_RESAMPLE_DISABLE, "Disable"},
 	{HW_RESAMPLE_48K,     "Enable:48K"},
 	{HW_RESAMPLE_44K,     "Enable:44K"},
@@ -73,7 +73,7 @@ static struct aml_mixer_ctrl gCtlHwResample {
 	{HW_RESAMPLE_UNLOCK,  "Unlock Resample"},
 };
 
-static struct aml_mixer_ctrl gCtlOutputSwap {
+static struct aml_mixer_ctrl gCtlOutputSwap[OUTPUT_SWAP_MAX] {
 	{OUTPUT_SWAP_LR, "LR"},
 	{OUTPUT_SWAP_LL, "LL"},
 	{OUTPUT_SWAP_RR, "RR"},

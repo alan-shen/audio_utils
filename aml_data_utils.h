@@ -5,34 +5,15 @@
 extern "C" {
 #endif
 
-/******************************************************************************
- *  Channel name index, we should transfor the idx to real bit mask on i2s data
- *  lines here, for the PRODUCT.
- *  For example:
- *      -----------------------------------------------------
- *                                      || IDX     || BitMask
- *      -----------------------------------------------------
- *      case 1: [2.0][normal][pulpfiction]
- *                                         L/R     -> I2S_01
- *      case 2: [2.0][matrix]
- *                                         L/R     -> I2S_23
- *      case 3: [4.1][missionimpossible]
- *                                         L/R     -> I2S_01
- *                                         LFE/LFE -> I2S_23
- *                                         Ls/Rs   -> I2S_45
- *      case 4: [5.1]
- *                                         L/R     -> I2S_01
- *                                         C/LFE   -> I2S_23
- *                                         Ls/Rs   -> I2S_45
- *      case 5: [5.1.2][atmos]
- *                                         L/R     -> I2S_01
- *                                         C/LFE   -> I2S_23
- *                                         Lt/Rt   -> I2S_45
- *                                         Ls/Rs   -> I2S_67
- *      -----------------------------------------------------
- *  
- *****************************************************************************/
+enum eFRAME_SIZE {
+	e16BitPerFrame = 2;
+	e32BitPerFrame = 4;
+};
+
+#define MINUS_3_DB_IN_Q19_12 2896 // -3dB = 0.707 * 2^12 = 2896
+
 typedef enum CHANNEL_CONTENT_INDEX {
+	AML_CH_IDX_NULL      = -1,
 	AML_CH_IDX_L         = 0,
 	AML_CH_IDX_R         = 1,
 	AML_CH_IDX_C         = 2,
@@ -49,21 +30,11 @@ typedef enum CHANNEL_CONTENT_INDEX {
 	AML_CH_IDX_5_1_2_ALL = 0x033F,
 } eChannelContentIdx;
 
-/******************************************************************************
- *  AML I2S Channel Bit Map:
- *  ----------------------
- *  I2S Port ||    I2S Ch
- *  ----------------------
- *    I2S_01 -- CHANNEL_0
- *           `- CHANNEL_1
- *    I2S_23 -- CHANNEL_2
- *           `- CHANNEL_3
- *    I2S_45 -- CHANNEL_4
- *           `- CHANNEL_5
- *    I2S_67 -- CHANNEL_6
- *           `- CHANNEL_7
- *
- *****************************************************************************/
+struct aml_audio_channel_name {
+	int  ch_idx;
+	char ch_name[50];
+};
+
 typedef enum I2S_DATALINE_INDEX {
 	AML_I2S_PORT_IDX_01   = 0,
 	AML_I2S_PORT_IDX_23   = 1,
@@ -86,6 +57,7 @@ typedef enum CHANNEL_ON_I2S_BIT_MASK{
 } eChOnI2SBitMask;
 
 #define AML_I2S_CHANNEL_COUNT  (8)
+#define AML_CH_CNT_PER_PORT    (2)
 
 struct aml_channel_map {
 	eChannelContentIdx channel_idx;
@@ -96,25 +68,10 @@ struct aml_channel_map {
 	eChOnI2SBitMask    bit_mask;
 };
 
-#if 0
-struct aml_product_channel_maps {
-	struct aml_channel_map l;   // left
-	struct aml_channel_map r;   // right
-	struct aml_channel_map c;   // center
-	struct aml_channel_map lfe; // lfe
-	struct aml_channel_map ls;  // left  side surround
-	struct aml_channel_map rs;  // rihgt side surround
-	struct aml_channel_map lbs; // left  back surround
-	struct aml_channel_map rbs; // right back surround
-	struct aml_channel_map lt;  // left  top
-	struct aml_channel_map rt;  // right top
-};
-#endif
-
 /******************************************************************************
  * Function: data_load_product_config()
  * Description:
- *      load channel maps for current product
+ *      initial/load channel maps for current product
  * Input:  NULL
  * Output: NULL
  * Return: Hw I2S Ch Maps
@@ -122,14 +79,16 @@ struct aml_product_channel_maps {
 struct aml_channel_map *data_load_product_config(void);
 
 /******************************************************************************
- * Function: data_get_product_chmaps()
+ * Function: data_get_channel_i2s_port()
  * Description:
- *      get channel maps of current product
- * Input:  NULL
- * Output: NULL
- * Return: Hw I2S Ch Maps
+ *       get hw i2s port for channel "channelName"
+ * Input:  eChannelContentIdx
+ * Output:
+ * Return: eI2SDataLineIdx
  *****************************************************************************/
-struct aml_channel_map *data_get_product_chmaps(void);
+int data_get_channel_i2s_port(
+	struct aml_channel_map *map,
+	eChannelContentIdx channelName);
 
 /******************************************************************************
  * Function: data_get_channel_bit_mask()
@@ -142,6 +101,29 @@ struct aml_channel_map *data_get_product_chmaps(void);
 int data_get_channel_bit_mask(
 	struct aml_channel_map *map,
 	eChannelContentIdx channelName);
+
+/******************************************************************************
+ * Function: data_empty_channels()
+ * Description:
+ *     clean channel data
+ * Input:
+ *     buf                    - input data
+ *     frames                 - frame count
+ *     framesz                - frame size
+ *     channels               - channel count
+ *     channel_empty_bit_mask - eChOnI2SBitMask, bit mask of channels which will
+ *                              be empty
+ * Output:
+ *     buf                    - output data
+ * Return: Zero if success
+ *****************************************************************************/
+int data_empty_channels(
+	struct  aml_channel_map *map,
+	void    *buf,
+	size_t  frames,
+	size_t  framesz,
+	int     channels,
+	int     channel_empty_bit_mask);
 
 /******************************************************************************
  * Function: data_remix_to_lr_channel()
@@ -157,63 +139,12 @@ int data_get_channel_bit_mask(
  * Return: Zero if success
  *****************************************************************************/
 int data_remix_to_lr_channel(
+	struct  aml_channel_map *map,
 	void    *buf,
 	size_t  frames,
     size_t  framesz,
 	int     channels,
-	int     channel_remix_src_bit_mask);
-
-/******************************************************************************
- * Function: data_extend_to_8channels()
- * Description: extend the data 
- * Input:
- *     out_channels - channel count of output
- *     out_maps     - Channel Map of output
- *     out_framesz  - Frame size(eg, 16bits->2, 32bits->4)
- *     in_buf       - Input Buffer
- *     in_channels  - channel count of input
- *     in_framesz   - Frame size(eg, 16bits->2, 32bits->4)
- *     in_maps      - Channel Map of input
- *     frames       - frame count
- * Output:
- *     out_buf      - output buffer
- * Return: Zero if success
- *****************************************************************************/
-int data_extend_to_8channels(
-	void    *out_buf,
-	size_t  out_channels,
-	size_t  out_framesz,
-	struct  aml_channel_map out_maps;
-	void    *in_buf,
-	size_t  in_channels,
-	size_t  in_framesz,
-	struct  aml_channel_map in_maps;
-	size_t  frames);
-
-/******************************************************************************
- * Function: data_extract_channels()
- * Description: extract channel data
- * Input:
- *     out_channels             - channel count of output
- *     out_framesz              - frame size of output data
- *     in_buf                   - input buffer
- *     in_channels              - channel count of input
- *     in_framesz               - frame szie of input data 
- *     frames                   - frame count
- *     channel_extract_bit_mask - eChOnI2SBitMask, ch mask will be extract
- * Output:
- *     out_buf                  - output buffer
- * Return: Zero if success
- *****************************************************************************/
-int data_extract_channels(
-	void    *out_buf,
-	size_t  out_channels,
-	size_t  out_framesz,
-	void    *in_buf,
-	size_t  in_channels,
-	size_t  in_framesz,
-	size_t  frames,
-	int     channel_extract_bit_mask);
+	eChannelContentIdx chIdx);
 
 /******************************************************************************
  * Function: data_exchange_i2s_channels()
@@ -238,6 +169,32 @@ int data_exchange_i2s_channels(
 	size_t  framesz,
 	int     i2s_idx1,
 	int     i2s_idx2);
+
+/******************************************************************************
+ * Function: data_replace_lfe_data()
+ * Description:
+ *     replace lfe data
+ * Input:
+ *     out_channles            - channel count of putput data
+ *     out_framesz             - frame size of output
+ *     input_lfe_buffer        - input lfe data
+ *     in_channles             - channel count of input data
+ *     in_framesz              - frame size of input
+ *     frames                  - frame count
+ *     channel_insert_bit_mask - eChOnI2SBitMask, bit mask of lfe channel
+ * Output:
+ *     out_buf                 - output data
+ * Return: Zero if success
+ *****************************************************************************/
+int data_replace_lfe_data(
+	void    *out_buf,
+	size_t  out_channles,
+	size_t  out_framesz,
+	void    *input_lfe_buffer,
+	size_t  in_channles,
+	size_t  in_framesz,
+	size_t  frames,
+	int     channel_insert_bit_mask);
 
 /******************************************************************************
  * Function: data_invert_channels()
@@ -289,28 +246,6 @@ int data_concat_channels(
 	size_t  frames);
 
 /******************************************************************************
- * Function: data_empty_channels()
- * Description:
- *     clean channel data
- * Input:
- *     buf                    - input data
- *     frames                 - frame count
- *     framesz                - frame size
- *     channels               - channel count
- *     channel_empty_bit_mask - eChOnI2SBitMask, bit mask of channels which will
- *                              be empty
- * Output:
- *     buf                    - output data
- * Return: Zero if success
- *****************************************************************************/
-int data_empty_channels(
-	void    *buf,
-	size_t  frames,
-	size_t  framesz,
-	int     channels,
-	int     channel_empty_bit_mask);
-
-/******************************************************************************
  * Function: data_add_ditter_to_channels()
  * Description:
  *     add ditter
@@ -333,30 +268,53 @@ int data_add_ditter_to_channels(
 	int     channel_ditter_bit_mask);
 
 /******************************************************************************
- * Function: data_replace_lfe_data()
- * Description:
- *     replace lfe data
+ * Function: data_extend_to_channels()
+ * Description: extend the data 
  * Input:
- *     out_channles            - channel count of putput data
- *     out_framesz             - frame size of output
- *     input_lfe_buffer        - input lfe data
- *     in_channles             - channel count of input data
- *     in_framesz              - frame size of input
- *     frames                  - frame count
- *     channel_insert_bit_mask - eChOnI2SBitMask, bit mask of lfe channel
+ *     out_channels - channel count of output
+ *     out_framesz  - Frame size(eg, 16bits->2, 32bits->4)
+ *     in_buf       - Input Buffer
+ *     in_channels  - channel count of input
+ *     in_framesz   - Frame size(eg, 16bits->2, 32bits->4)
+ *     frames       - frame count
  * Output:
- *     out_buf                 - output data
+ *     out_buf      - output buffer
  * Return: Zero if success
  *****************************************************************************/
-int data_replace_lfe_data(
+int data_extend_channels(
 	void    *out_buf,
-	size_t  out_channles,
+	size_t  out_channels,
 	size_t  out_framesz,
-	void    *input_lfe_buffer,
-	size_t  in_channles,
+	void    *in_buf,
+	size_t  in_channels,
+	size_t  in_framesz,
+	size_t  frames);
+
+/******************************************************************************
+ * Function: data_extract_channels()
+ * Description: extract channel data
+ * Input:
+ *     out_channels             - channel count of output
+ *     out_framesz              - frame size of output data
+ *     in_buf                   - input buffer
+ *     in_channels              - channel count of input
+ *     in_framesz               - frame szie of input data 
+ *     frames                   - frame count
+ *     channel_extract_bit_mask - eChOnI2SBitMask, ch mask will be extract
+ * Output:
+ *     out_buf                  - output buffer
+ * Return: Zero if success
+ *****************************************************************************/
+int data_extract_channels(
+	struct  aml_channel_map *map,
+	void    *out_buf,
+	size_t  out_channels,
+	size_t  out_framesz,
+	void    *in_buf,
+	size_t  in_channels,
 	size_t  in_framesz,
 	size_t  frames,
-	int     channel_insert_bit_mask);
+	int     channel_extract_bit_mask);
 
 #ifdef __cplusplus
 }
