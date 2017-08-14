@@ -29,10 +29,10 @@ int aml_getprop_bool(const char * path)
 	ret = property_get(path, buf, NULL);
 	if (ret > 0) {
 		if (strcasecmp(buf, "true") == 0 || strcmp(buf, "1") == 0)
-		return 1;
+			return eAML_BOOL_TRUE;
 	}
 
-	return 0;
+	return eAML_BOOL_FALSE;
 }
 
 int aml_getprop_int(const char *path)

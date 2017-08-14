@@ -1,16 +1,14 @@
-/**
- ** aml_android_utils.h
- **
- ** This program is APIs for get/set android property, get/set sys fs point.
- ** author: shen pengru
- **
- */
 #ifndef _AML_ANDROID_UTILS_H_
 #define _AML_ANDROID_UTILS_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum AML_BOOLEAN_DEFINE {
+	eAML_BOOL_FALSE = 0,
+	eAML_BOOL_TRUE  = 1,
+}
 
 /*
  * Android Property Interface

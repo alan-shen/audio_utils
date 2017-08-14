@@ -1,10 +1,3 @@
-/**
- ** aml_alsa_mixer.h
- **
- ** This program is APIs for read/write mixers of alsa.
- ** author: shen pengru
- **
- */
 #ifndef _AML_ALSA_MIXER_H_
 #define _AML_ALSA_MIXER_H_
 
@@ -17,70 +10,70 @@ extern "C" {
  **/
 /* Audio i2s mute */
 typedef enum MIXER_AUDIO_I2S_MUTE {
-	I2S_MUTE_ON = 0,
-	I2S_MUTE_OFF,
+	I2S_MUTE_OFF = 0,
+	I2S_MUTE_ON  = 1,
 	I2S_MUTE_MAX,
 } eMixerAudioI2sMute;
 
 /* Audio spdif mute */
 typedef enum MIXER_SPDIF_MUTE {
-	SPDIF_MUTE_ON = 0,
-	SPDIF_MUTE_OFF,
+	SPDIF_MUTE_OFF = 0,
+	SPDIF_MUTE_ON  = 1,
 	SPDIF_MUTE_MAX,
 } eMixerSpdifMute;
 
 /* Audio spdif enable */
 typedef enum MIXER_SPDIF_ENABLE {
-	SPDIF_EN_ENABLE = 0,
-	SPDIF_EN_DISABLE,
+	SPDIF_EN_DISABLE = 0,
+	SPDIF_EN_ENABLE  = 1,
 	SPDIF_EN_MAX,
 } eMixerSpdifEnable;
 
 /* Audio In Source */
 typedef enum MIXER_AUDIO_IN_SOURCE {
-	AUDIOIN_SRC_LINEIN = 0,
-	AUDIOIN_SRC_ATV,
-	AUDIOIN_SRC_HDMI,
-	AUDIOIN_SRC_SPDIFIN,
+	AUDIOIN_SRC_LINEIN  = 0,
+	AUDIOIN_SRC_ATV     = 1,
+	AUDIOIN_SRC_HDMI    = 2,
+	AUDIOIN_SRC_SPDIFIN = 3,
 	AUDIOIN_SRC_MAX,
 } eMixerAudioInSrc;
 
 /* Audio I2SIN Audio Type */
 typedef enum MIXER_I2SIN_AUDIO_TYPE {
-	I2SIN_AUDIO_TYPE_LPCM = 0,
-	I2SIN_AUDIO_TYPE_NONE_LPCM,
-	I2SIN_AUDIO_TYPE_UN_KNOWN,
+	I2SIN_AUDIO_TYPE_LPCM      = 0,
+	I2SIN_AUDIO_TYPE_NONE_LPCM = 1,
+	I2SIN_AUDIO_TYPE_UN_KNOWN  = 2,
 	I2SIN_AUDIO_TYPE_MAX,
 } eMixerI2sInAudioType;
 
 /* Audio SPDIFIN Audio Type */
 typedef enum MIXER_SPDIFIN_AUDIO_TYPE {
-	SPDIFIN_AUDIO_TYPE_LPCM = 0,
-	SPDIFIN_AUDIO_TYPE_AC3,
-	SPDIFIN_AUDIO_TYPE_EAC3,
-	SPDIFIN_AUDIO_TYPE_DTS,
-	SPDIFIN_AUDIO_TYPE_DTSHD,
-	SPDIFIN_AUDIO_TYPE_TRUEHD,
+	SPDIFIN_AUDIO_TYPE_LPCM   = 0,
+	SPDIFIN_AUDIO_TYPE_AC3    = 1,
+	SPDIFIN_AUDIO_TYPE_EAC3   = 2,
+	SPDIFIN_AUDIO_TYPE_DTS    = 3,
+	SPDIFIN_AUDIO_TYPE_DTSHD  = 4,
+	SPDIFIN_AUDIO_TYPE_TRUEHD = 5,
 	SPDIFIN_AUDIO_TYPE_MAX,
 } eMixerApdifinAudioType;
 
 /* Hardware resample enable */
 typedef enum MIXER_HW_RESAMPLE_ENABLE {
 	HW_RESAMPLE_DISABLE = 0,
-	HW_RESAMPLE_48K,
-	HW_RESAMPLE_44K,
-	HW_RESAMPLE_32K,
-	HW_RESAMPLE_LOCK,
-	HW_RESAMPLE_UNLOCK,
+	HW_RESAMPLE_48K     = 1,
+	HW_RESAMPLE_44K     = 2,
+	HW_RESAMPLE_32K     = 3,
+	HW_RESAMPLE_LOCK    = 4,
+	HW_RESAMPLE_UNLOCK  = 5,
 	HW_RESAMPLE_MAX,
 } eMixerHwResample;
 
 /* Output Swap */
 typedef enum MIXER_OUTPUT_SWAP {
 	OUTPUT_SWAP_LR = 0,
-	OUTPUT_SWAP_LL,
-	OUTPUT_SWAP_RR,
-	OUTPUT_SWAP_RL,
+	OUTPUT_SWAP_LL = 1,
+	OUTPUT_SWAP_RR = 2,
+	OUTPUT_SWAP_RL = 3,
 	OUTPUT_SWAP_MAX,
 } eMixerOutputSwap;
 

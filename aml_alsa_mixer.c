@@ -11,19 +11,20 @@
 #include <errno.h>
 #include <cutils/log.h>
 #include <fcntl.h>
+#include "aml_hw_profile.h"
 #include "aml_alsa_mixer.h"
 
 #define LOG_TAG "audio_alsa_mixer"
 
 static struct aml_mixer_list gAmlMixerList {
-    {AML_MIXER_ID_I2S_MUTE,           "Audio i2s mute"},
-    {AML_MIXER_ID_SPDIF_MUTE,         "Audio spdif mute"},
-    {AML_MIXER_ID_SPDIF_ENABLE,       "Audio spdif enable"},
-    {AML_MIXER_ID_AUDIO_IN_SRC,       "Audio In Source"},
-    {AML_MIXER_ID_I2SIN_AUDIO_TYPE,   "I2SIN Audio Type"},
-    {AML_MIXER_ID_SPDIFIN_AUDIO_TYPE, "SPDIFIN Audio Type"},
-    {AML_MIXER_ID_HW_RESAMPLE_ENABLE, "Hardware resample enable"},
-    {AML_MIXER_ID_OUTPUT_SWAP,        "Output Swap"},
+	{AML_MIXER_ID_I2S_MUTE,           "Audio i2s mute"},
+	{AML_MIXER_ID_SPDIF_MUTE,         "Audio spdif mute"},
+	{AML_MIXER_ID_SPDIF_ENABLE,       "Audio spdif enable"},
+	{AML_MIXER_ID_AUDIO_IN_SRC,       "Audio In Source"},
+	{AML_MIXER_ID_I2SIN_AUDIO_TYPE,   "I2SIN Audio Type"},
+	{AML_MIXER_ID_SPDIFIN_AUDIO_TYPE, "SPDIFIN Audio Type"},
+	{AML_MIXER_ID_HW_RESAMPLE_ENABLE, "Hardware resample enable"},
+	{AML_MIXER_ID_OUTPUT_SWAP,        "Output Swap"},
 };
 
 static struct aml_mixer_ctrl gCtlI2sMute {
@@ -93,50 +94,12 @@ static char *_get_mixer_name_by_id(int mixer_id)
 	return NULL;
 }
 
-static int _get_aml_sound_card(void) {
-    static const char * const SOUND_CARDS_PATH = "/proc/asound/cards";
-	int card = -1, err = -1;
-	int fd = -1;
-	unsigned fileSize = 512;
-	char *read_buf = NULL, *pd = NULL;
-
-	fd = open(SOUND_CARDS_PATH, O_RDONLY);
-	if (fd < 0) {
-		ALOGE("ERROR: failed to open config file %s error: %d\n",
-			SOUND_CARDS_PATH, errno);
-		return -EINVAL;
-	}
-
-	read_buf = (char *) malloc(fileSize);
-	if (!read_buf) {
-		ALOGE("Failed to malloc read_buf");
-		close(fd);
-		return -ENOMEM;
-	}
-	memset(read_buf, 0x0, fileSize);
-	err = read(fd, read_buf, fileSize);
-	if (err < 0) {
-		ALOGE("ERROR: failed to read config file %s error: %d\n",
-			SOUND_CARDS_PATH, errno);
-		close(fd);
-		free(read_buf);
-		return -EINVAL;
-	}
-	pd = strstr(read_buf, "AML");
-	card = *(pd - 3) - '0';
-
-	free(read_buf);
-	close(fd);
-
-	return card;
-}
-
 static struct mixer *_open_mixer_handle(int mixer_id)
 {
 	int card = 0;
 	struct mixer *pmixer = NULL;
 
-	card = _get_aml_sound_card();
+	card = aml_get_sound_card_main();
 	if (card < 0) {
 		ALOGE("[%s:%d] Failed to get sound card\n", __FUNCTION__, __LINE__);
 		return NULL;

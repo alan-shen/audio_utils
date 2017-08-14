@@ -1,8 +1,3 @@
-/**
- ** aml_data_utils.h
- ** author: shen pengru
- **
- */
 #ifndef _AML_DATA_UTILS_H_
 #define _AML_DATA_UTILS_H_
 
